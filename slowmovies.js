@@ -1,50 +1,34 @@
+var global = {};
 
-window.resizeTo(1024,500);
-
-
-var randomnumber=Math.floor(Math.random()*100)
-
-randomnumber=randomnumber + 628;
-
-var currPic=randomnumber;
-
-var totPics=48;
-
-var keepTime;
-
-var timer=500;
-
-function FormatNumberLength(num, length) {
-    var r = "" + num;
-    while (r.length < length) {
-        r = "0" + r;
-    }
-    return r;
-}
-
-function setupPicChange() { 
-    timer = timer*1.01;
-	keepTime=setTimeout(changePic, timer); 
-}
-
-function changePic() { 
-    currPic++; 
-    
-    if(currPic>totPics) { 
-        currPic=628;
+(function()  {
+    function PictureStream() {
+        this.max = 9728; // Check this
+        this.currentIndex = 628;
+        this.speed = 2000;
+        this.timerId;
+        
+        this.setImage();
     }
 
-    currPic=FormatNumberLength(currPic, 5);
-    document.getElementById("picture").src="https://s3.amazonaws.com/whatwonder.com/images/blushing/blushing"+currPic+".jpg";
-    setupPicChange(); 
-}
+    PictureStream.prototype.launch = function() {
+       this.timerId = setInterval(_.bind(this.setImage, this), this.speed);
+    }
 
-function stopTimer() { 
-    clearTimeout(keepTime); 
-}
+    PictureStream.prototype.setImage = function() {
+        var paddedIndexString = "00000" + this.currentIndex.toString();
+        var indexString = paddedIndexString.slice(-5);
+        var src = "https://s3.amazonaws.com/whatwonder.com/images/blushing/blushing" + indexString + ".jpg";
 
-function startTimer() { 
-    timer= timer*1.1;
-    keepTime=setTimeout("changePic()", timer); 
-}
+        $('#picture').attr('src', src);
 
+        this.currentIndex++;
+        this.currentIndex = (this.currentIndex > this.max ? 628 : this.currentIndex); 
+        console.log(this.currentIndex);
+    }
+
+    PictureStream.prototype.stopStream = function() {
+        clearInterval(this.timerId);
+    }
+
+    global.PictureStream = PictureStream;
+})();
